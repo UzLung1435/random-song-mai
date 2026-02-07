@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import MusicListView from '@/views/MusicListView.vue'
-import MusicCard from '@/components/MusicCard.vue'
+import MusicInfoCard from '@/components/MusicInfoCard.vue'
 import RandomView from '@/views/RandomView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 
@@ -21,7 +21,7 @@ const router = createRouter({
     {
       path: '/test',
       name: 'test',
-      component: MusicCard,
+      component: MusicInfoCard,
     },
     {
       path: '/random',

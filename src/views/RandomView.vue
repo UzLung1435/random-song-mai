@@ -28,7 +28,7 @@
       <div class="draw-stage" @click="drawNextSong">
         <transition name="scale-fade" mode="out-in">
           <div v-if="currentSong" :key="currentSong.musicid" class="card-focus">
-            <MusicCard :item="currentSong" :matched-indices="[0, 1, 2, 3, 4]" class="match-card-large" />
+            <MusicCard :item="currentSong" :matched-indices="currentChartDiff" class="match-card-large" />
           </div>
           <div v-else class="draw-prompt m3-surface">
             <mdui-icon name="casino"></mdui-icon>
@@ -114,6 +114,28 @@ onMounted(async () => {
   allMusic.value = await res.json();
 });
 
+// 计算当前曲目的难度索引
+const currentChartDiff = computed(() => {
+  // 1. 使用可选链检查 settings 和 drawnIndices 是否存在
+  const drawn = matchStore.settings?.drawnIndices;
+  if (!drawn || drawn.length === 0) return [];
+
+  // 2. 获取最后一个索引
+  const lastIndex = drawn[drawn.length - 1];
+  if (lastIndex === undefined) return [];
+
+  // 3. 检查 pool 是否存在且包含该索引
+  const pool = matchStore.customPool;
+  if (!pool || !pool[lastIndex]) return [];
+
+  const rawData = pool[lastIndex];
+
+  // 4. 解析难度
+  return typeof rawData === 'string'
+    ? [parseInt(rawData.split('_')[1] || '0')]
+    : rawData.info.levelList.map((lv: string, idx: number) => lv !== '-' ? idx : -1).filter((idx: number) => idx !== -1);
+});
+
 // 分配左右玩家列表 (根据 playerCount 动态分配)
 const leftPlayers = computed(() => {
   const count = matchStore.settings.playerCount;
@@ -141,6 +163,8 @@ const getCoverUrl = (musicid: string) => {
   const id = (Number(musicid) % 10000).toString().padStart(6, '0');
   return `/musicbg/${id}_s.png`;
 };
+
+const numberToArray = (num: number) => Array.from({ length: num }, (_, i) => i);
 
 // 当前展示的歌曲
 const currentSong = computed(() => {
@@ -220,7 +244,7 @@ const drawNextSong = () => {
 
   if (pool.length === 0) return alert('请先导入曲库');
   if (drawn.length >= pool.length) return alert('曲库已抽完');
-
+  alert('确定抽选吗？');
   let nextIdx: number;
   do {
     nextIdx = Math.floor(Math.random() * pool.length);
